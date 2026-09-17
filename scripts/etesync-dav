@@ -5,9 +5,17 @@ import os
 import sys
 
 import radicale
-from etesync_dav import radicale_main
 
-from etesync_dav.config import DATA_DIR, HTPASSWD_FILE, LOG_FILE, SERVER_HOSTS, SSL_CERT_FILE, SSL_KEY_FILE
+from etesync_dav import radicale_main
+from etesync_dav.config import (
+    DATA_DIR,
+    HTPASSWD_FILE,
+    LOG_FILE,
+    SERVER_HOSTS,
+    SSL_CERT_FILE,
+    SSL_KEY_FILE,
+    local_server_url,
+)
 from etesync_dav.mac_helpers import has_ssl
 from etesync_dav.manage import Manager
 
@@ -139,31 +147,27 @@ if has_ssl():
         '--server-certificate', SSL_CERT_FILE,
     ]
 
+scheme = 'https' if has_ssl() else 'http'
+admin_interface = local_server_url(scheme)
+
 # If first run:
 if first_run:
     # Attempt to run the default web browser
     import webbrowser
-    scheme = 'https' if has_ssl() else 'http'
-    url = 'localhost:37358'  # Not good to have it hardcoded, but will work for most people
-    admin_interface = '{}://{}'.format(scheme, url)
     try:
         webbrowser.open(admin_interface)
     except Exception as e:
         logger.exception(e)
 
 if sys.platform == 'darwin':
-    from threading import Thread
-    def machack():
-        try:
-            from PyObjCTools import AppHelper
-            AppHelper.runConsoleEventLoop()
-        except ImportError:
-            pass
+    from etesync_dav.mac_menu import run_menu_bar
 
-    thread = Thread(target=machack)
-    thread.setDaemon(True)
-    thread.start()
-
-radicale_main.run(radicale_args + sys.argv[1:])
+    run_menu_bar(
+        admin_interface,
+        lambda shutdown_socket: radicale_main.run(radicale_args + sys.argv[1:], shutdown_socket),
+        log_file=logfilename,
+    )
+else:
+    radicale_main.run(radicale_args + sys.argv[1:])
 
 sys.exit(0)
