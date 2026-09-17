@@ -231,6 +231,25 @@ Run the etesync commands as explained in the [Configuration and running](#config
 
 Please note that you'll have to run `source venv/bin/activate` every time you'd like to run the EteSync commands.
 
+## Building the macOS app
+
+Install the Xcode command-line tools, a Rust toolchain, and [uv](https://docs.astral.sh/uv/).
+Then run the following commands from the repository root:
+
+    uv sync --locked
+    uv pip install --reinstall --no-deps .
+    rm -rf pyinstaller/build pyinstaller/dist
+    cd pyinstaller
+    RUNNER_OS=macOS uv run --no-sync ./bundle.sh
+
+The non-editable install is required so PyInstaller can discover the local `etesync_dav`
+package. `--no-sync` prevents uv from replacing it with an editable install during the build.
+
+The resulting app and executable are placed in `pyinstaller/dist`, and the distributable
+archive is written to `pyinstaller/deploy/mac-etesync-dav.zip`. The app is built for the
+architecture of the build machine (arm64 on Apple Silicon). Local builds are ad-hoc signed,
+not Developer ID signed or notarized.
+
 # Advanced usage
 
 ## CLI
