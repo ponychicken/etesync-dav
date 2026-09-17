@@ -35,3 +35,4 @@ CREDS_FILE = os.path.join(DATA_DIR, "etesync_creds")
 
 SSL_KEY_FILE = os.path.join(DATA_DIR, "etesync.key")
 SSL_CERT_FILE = os.path.join(DATA_DIR, "etesync.crt")
+LOG_FILE = os.path.join(DATA_DIR, "etesync-dav.log")

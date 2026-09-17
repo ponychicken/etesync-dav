@@ -189,6 +189,9 @@ You can either follow the Docker instructions above (get Docker [here](https://w
 
 ## Python virtual environment (Linux, BSD and Mac)
 
+The server writes an append-only log to `~/Library/Application Support/etesync-dav/etesync-dav.log`
+on macOS. Set `ETESYNC_LOGFILE` to use a different location.
+
 Install virtual env (for **Python 3**) from your package manager, for example:
 
 - Arch Linux: pacman -S python-virtualenv

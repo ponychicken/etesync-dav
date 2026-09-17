@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
+import logging
 import os
 import sys
-import logging
 
 import radicale
 from etesync_dav import radicale_main
 
-from etesync_dav.manage import Manager
-from etesync_dav.config import DATA_DIR, SERVER_HOSTS, HTPASSWD_FILE, SSL_KEY_FILE, SSL_CERT_FILE
+from etesync_dav.config import DATA_DIR, HTPASSWD_FILE, LOG_FILE, SERVER_HOSTS, SSL_CERT_FILE, SSL_KEY_FILE
 from etesync_dav.mac_helpers import has_ssl
+from etesync_dav.manage import Manager
 
 logger = logging.getLogger('etesync-dav')
 
@@ -96,9 +96,15 @@ if len(sys.argv) > 1 and sys.argv[1] == '--version':
     print("Radicale version: ", radicale.VERSION)
     sys.exit(0)
 
-logfilename = os.getenv('ETESYNC_LOGFILE', None)
+first_run = not os.path.exists(DATA_DIR)
+if first_run:
+    Manager()
+
+logfilename = os.getenv('ETESYNC_LOGFILE')
+if logfilename is None and sys.platform == 'darwin':
+    logfilename = LOG_FILE
 if logfilename:
-    logfile = open(logfilename, 'a', encoding='utf-8')
+    logfile = open(logfilename, 'a', encoding='utf-8', buffering=1)
     sys.stdout = logfile
     sys.stderr = logfile
 
@@ -134,9 +140,7 @@ if has_ssl():
     ]
 
 # If first run:
-if not os.path.exists(DATA_DIR):
-    # Init data if no data dir
-    Manager()
+if first_run:
     # Attempt to run the default web browser
     import webbrowser
     scheme = 'https' if has_ssl() else 'http'
